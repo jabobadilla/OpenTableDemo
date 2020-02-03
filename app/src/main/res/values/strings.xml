@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Open Table Demo</string>
+
+    <string name="go_to_home">Home</string>
+
+    <string name="call_permission_denied_message">Make sure you have the permissions enabled, or this number cannot be dialed to</string>
+
+    <string name="connection_problem_title">Attention</string>
+    <string name="connection_problem_message">There was a problem connecting, please try again later</string>
+    <string name="connection_problem_action">Connection</string>
+
+    <string name="drawer_open">Drawer Open</string>
+    <string name="drawer_close">Drawer Close</string>
+
+</resources>
