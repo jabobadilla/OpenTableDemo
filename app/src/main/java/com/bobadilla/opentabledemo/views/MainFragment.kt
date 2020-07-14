@@ -1,9 +1,6 @@
 package com.bobadilla.opentabledemo.views
 
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,19 +8,19 @@ import android.widget.ListView
 import android.widget.SearchView
 import androidx.annotation.NonNull
 import androidx.annotation.Nullable
+import androidx.fragment.app.Fragment
 import com.bobadilla.opentabledemo.R
 import com.bobadilla.opentabledemo.Singleton
 import com.bobadilla.opentabledemo.adapters.MainAdapter
-import com.bobadilla.opentabledemo.connection.OkHttpRequest
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.OkHttpClient
-import okhttp3.Response
+import com.bobadilla.opentabledemo.controller.ConnectionController
+import com.bobadilla.opentabledemo.objects.CommonFunctions
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import java.io.IOException
-import kotlin.collections.ArrayList
 
 class MainFragment : Fragment(), View.OnClickListener, SearchView.OnQueryTextListener {
 
@@ -32,10 +29,12 @@ class MainFragment : Fragment(), View.OnClickListener, SearchView.OnQueryTextLis
 
     private var lay: Int = 0
     private var mainAdapter: MainAdapter? = null
-    private var mHandler = Handler(Looper.getMainLooper());
 
     private var JSONResponse: JSONObject? = null
     public var citiesList: ArrayList<String>? = null
+
+    private val parentJob = Job()
+    private val coroutineScope = CoroutineScope(Dispatchers.Main + parentJob)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,90 +64,57 @@ class MainFragment : Fragment(), View.OnClickListener, SearchView.OnQueryTextLis
 
         listView.setOnItemClickListener { _, _, position, _ ->
             val selectedCity = this!!.citiesList!![position]
-            goToRestaurants(selectedCity)
+            CommonFunctions.goToNextFragment(lay, selectedCity)
         }
 
         searchBar!!.setOnQueryTextListener(this)
 
-        callOpenTable()
-    }
-
-    fun goToRestaurants(selectedCity: String) {
-
-        val restaurantsFragment = RestaurantsFragment()
-        val bundle = Bundle()
-        bundle.putInt("lay", lay)
-        bundle.putString("city",selectedCity)
-        restaurantsFragment.setArguments(bundle)
-        getFragmentManager()?.beginTransaction()
-            ?.replace(lay, restaurantsFragment)
-            ?.addToBackStack(null)
-            ?.commit()
-
-    }
-
-    private fun callOpenTable() {
-
-        Singleton.showLoadDialog(getFragmentManager())
-
-        var client = OkHttpClient()
-        var request= OkHttpRequest(client)
-
-        val url = "https://opentable.herokuapp.com/api/cities"
-
-        request.GET(url, object: Callback {
-
-            override fun onFailure(call: Call, e: IOException) {
-                println("Request Failure.")
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                val responseData = response.body?.string()
-                mHandler.post{
-                    try {
-                        JSONResponse = JSONObject(responseData)
-                        println("Request Successful!!")
-                        println(JSONResponse)
-                        this@MainFragment.fetchComplete()
-                    } catch (e: JSONException) {
-                        Singleton.dissmissLoad()
-                        e.printStackTrace()
-                        Singleton.showCustomDialog(Singleton.getFragmentManager(),
-                            activity?.resources?.getString(R.string.connection_problem_title), activity?.resources?.getString(R.string.connection_problem_message), activity?.resources?.getString(R.string.connection_problem_action), 0);
-                    }
+        coroutineScope.launch {
+            JSONResponse = ConnectionController.callOpenTableSync("https://opentable.herokuapp.com/api/cities").await()
+            when (JSONResponse) {
+                is JSONObject -> {
+                    fetchComplete()
                 }
+                else -> CommonFunctions.displayJSONReadErrorMessage()
             }
+        }
 
-        })
     }
 
     fun fetchComplete() {
 
         println("fetchComplete")
 
-        val citiesArray : JSONArray? = JSONResponse?.getJSONArray("cities")
+        try {
+            val citiesArray : JSONArray? = JSONResponse?.getJSONArray("cities")
 
-        citiesList = ArrayList()
+            citiesList = ArrayList()
 
-        for (i in 0 until citiesArray!!.length()) {
-            citiesList?.add(citiesArray!!.getString(i))
+            for (i in 0 until citiesArray!!.length()) {
+                citiesList?.add(citiesArray!!.getString(i))
+            }
+
+            mainAdapter = MainAdapter(citiesList!!,this)
+            listView.adapter = mainAdapter
+            mainAdapter?.notifyDataSetChanged()
         }
-
-        mainAdapter = MainAdapter(Singleton.getCurrentActivity(),citiesList!!,this)
-        listView!!.adapter = mainAdapter
-        mainAdapter!!.notifyDataSetChanged()
-
-        Singleton.dissmissLoad()
+        catch (e: JSONException){
+            e.printStackTrace()
+            CommonFunctions.displayJSONReadErrorMessage()
+        }
+        finally {
+            Singleton.dissmissLoad()
+        }
 
     }
 
     override fun onQueryTextSubmit(query: String): Boolean {
-        mainAdapter!!.filter(query)
+        mainAdapter?.filter(query)
         return false
     }
 
     override fun onQueryTextChange(newText: String): Boolean {
-        mainAdapter!!.filter(newText)
+        mainAdapter?.filter(newText)
         return false
     }
 

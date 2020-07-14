@@ -17,23 +17,20 @@ import com.squareup.picasso.Picasso
 import java.util.*
 import kotlin.collections.ArrayList
 
-class RestaurantsAdapter(private val context: Context, private val dataSource: ArrayList<Restaurant>, private val fragment: RestaurantsFragment) : BaseAdapter() {
+class RestaurantsAdapter(private val dataSource: ArrayList<Restaurant>, private val fragment: RestaurantsFragment) : BaseAdapter() {
     private var inflater: LayoutInflater? = null
     private var dataSourceCopy : ArrayList<Restaurant> = ArrayList()
 
     init {
-        inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         dataSourceCopy.addAll(dataSource)
     }
 
     override fun getCount(): Int {
         return dataSource.size
-        //return titles.size
     }
 
     override fun getItem(position: Int): Any {
         return dataSource[position]
-        //return titles[position]
     }
 
     override fun getItemId(position: Int): Long {
@@ -47,14 +44,16 @@ class RestaurantsAdapter(private val context: Context, private val dataSource: A
         var img: ImageView? = null
         var txt: TextView? = null
 
-        if (convertView == null)
+        if (convertView == null) {
+            inflater = parent.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
             convertView = inflater!!.inflate(R.layout.listview_cities_row, parent, false)
+        }
 
         img = ViewHolder[convertView!!, R.id.main_icon]
         if (dataSource[position].image_url != null)
             Picasso.get().load(dataSource[position].image_url).into(img)
         else
-            img.setImageDrawable(context.resources.getDrawable(R.drawable.restaurantes,context.theme))
+            img.setImageDrawable(parent.resources.getDrawable(R.drawable.restaurantes,parent.context.theme))
 
 
         txt = ViewHolder[convertView, R.id.main_txt]

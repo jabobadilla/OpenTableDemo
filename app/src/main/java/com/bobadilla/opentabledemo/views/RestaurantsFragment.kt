@@ -1,8 +1,6 @@
 package com.bobadilla.opentabledemo.views
 
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,17 +12,17 @@ import androidx.fragment.app.Fragment
 import com.bobadilla.opentabledemo.R
 import com.bobadilla.opentabledemo.Singleton
 import com.bobadilla.opentabledemo.adapters.RestaurantsAdapter
-import com.bobadilla.opentabledemo.connection.OkHttpRequest
+import com.bobadilla.opentabledemo.controller.ConnectionController
+import com.bobadilla.opentabledemo.objects.CommonFunctions
 import com.bobadilla.opentabledemo.objects.Restaurant
 import com.google.gson.Gson
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.OkHttpClient
-import okhttp3.Response
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import java.io.IOException
 
 class RestaurantsFragment : Fragment(), View.OnClickListener, SearchView.OnQueryTextListener {
 
@@ -34,16 +32,18 @@ class RestaurantsFragment : Fragment(), View.OnClickListener, SearchView.OnQuery
     private var lay: Int = 0
     private var selectedCity : String? = null
     private var restaurantsAdapter: RestaurantsAdapter? = null
-    private var mHandler = Handler(Looper.getMainLooper());
 
     private var JSONResponse: JSONObject? = null
     public var restaurantsList: ArrayList<Restaurant>? = null
+
+    private val parentJob = Job()
+    private val coroutineScope = CoroutineScope(Dispatchers.Main + parentJob)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val bundle = getArguments()
         lay = bundle!!.getInt("lay")
-        selectedCity = bundle!!.getString("city", "")
+        selectedCity = bundle!!.getString("selectedItem", "")
         Singleton.setCurrentFragment(this)
     }
 
@@ -73,90 +73,56 @@ class RestaurantsFragment : Fragment(), View.OnClickListener, SearchView.OnQuery
         searchBar = view.findViewById(R.id.search_cities_bar)
 
         listView.setOnItemClickListener { _, _, position, _ ->
-            val selectedRestaurant = this!!.restaurantsList!![position].id
-            goToRestaurantDetail(selectedRestaurant)
+            val selectedRestaurant = this!!.restaurantsList!![position].id.toString()
+            CommonFunctions.goToNextFragment(lay, selectedRestaurant)
         }
 
         searchBar!!.setOnQueryTextListener(this)
 
-        callOpenTable()
-    }
-
-    fun goToRestaurantDetail(selectedRestaurant: Int) {
-
-        val restaurantsFragment = RestaurantDetailFragment()
-        val bundle = Bundle()
-        bundle.putInt("lay", lay)
-        bundle.putInt("restaurant",selectedRestaurant)
-        restaurantsFragment.setArguments(bundle)
-        getFragmentManager()?.beginTransaction()
-            ?.replace(lay, restaurantsFragment)
-            ?.addToBackStack(null)
-            ?.commit()
-
-    }
-
-    private fun callOpenTable() {
-
-        Singleton.showLoadDialog(getFragmentManager())
-
-        var client = OkHttpClient()
-        var request= OkHttpRequest(client)
-
-        val url = "https://opentable.herokuapp.com/api/restaurants?city=" + selectedCity
-
-        request.GET(url, object: Callback {
-
-            override fun onFailure(call: Call, e: IOException) {
-                println("Request Failure.")
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                val responseData = response.body?.string()
-                mHandler.post{
-                    try {
-                        JSONResponse = JSONObject(responseData)
-                        println("Request Successful!!")
-                        println(JSONResponse)
-                        this@RestaurantsFragment.fetchComplete()
-                    } catch (e: JSONException) {
-                        Singleton.dissmissLoad()
-                        e.printStackTrace()
-                        Singleton.showCustomDialog(Singleton.getFragmentManager(),
-                            activity?.resources?.getString(R.string.connection_problem_title), activity?.resources?.getString(R.string.connection_problem_message), activity?.resources?.getString(R.string.connection_problem_action), 0);
-                    }
+        coroutineScope.launch {
+            JSONResponse = ConnectionController.callOpenTableSync("https://opentable.herokuapp.com/api/restaurants?city=" + selectedCity).await()
+            when (JSONResponse) {
+                is JSONObject -> {
+                    fetchComplete()
                 }
+                else -> CommonFunctions.displayJSONReadErrorMessage()
             }
-
-        })
+        }
     }
 
     fun fetchComplete() {
 
         println("fetchComplete")
 
-        val restaurantsArray : JSONArray? = JSONResponse?.getJSONArray("restaurants")
+        try {
+            val restaurantsArray : JSONArray? = JSONResponse?.getJSONArray("restaurants")
 
-        restaurantsList = ArrayList<Restaurant>()
-        for (i in 0 until restaurantsArray!!.length()) {
-            restaurantsList?.add(Gson().fromJson(restaurantsArray!!.getString(i),Restaurant::class.java))
+            restaurantsList = ArrayList<Restaurant>()
+            for (i in 0 until restaurantsArray!!.length()) {
+                restaurantsList?.add(Gson().fromJson(restaurantsArray!!.getString(i),Restaurant::class.java))
+            }
+
+            restaurantsAdapter = RestaurantsAdapter(restaurantsList!!,this)
+            listView.adapter = restaurantsAdapter
+            restaurantsAdapter?.notifyDataSetChanged()
         }
-
-        restaurantsAdapter = RestaurantsAdapter(Singleton.getCurrentActivity(),restaurantsList!!,this)
-        listView!!.adapter = restaurantsAdapter
-        restaurantsAdapter!!.notifyDataSetChanged()
-
-        Singleton.dissmissLoad()
+        catch (e: JSONException){
+            e.printStackTrace()
+            CommonFunctions.displayJSONReadErrorMessage()
+        }
+        finally {
+            Singleton.dissmissLoad()
+        }
 
     }
 
     override fun onQueryTextSubmit(query: String): Boolean {
-        restaurantsAdapter!!.filter(query)
+        restaurantsAdapter?.filter(query)
         return false
     }
 
     override fun onQueryTextChange(newText: String): Boolean {
-        restaurantsAdapter!!.filter(newText)
+        restaurantsAdapter?.filter(newText)
         return false
     }
 

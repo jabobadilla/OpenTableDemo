@@ -16,23 +16,20 @@ import kotlin.collections.ArrayList
 import com.bobadilla.opentabledemo.R
 
 
-class MainAdapter(private val context: Context, private val dataSource: ArrayList<String>, private val fragment: MainFragment) : BaseAdapter() {
+class MainAdapter(private val dataSource: ArrayList<String>, private val fragment: MainFragment) : BaseAdapter() {
     private var inflater: LayoutInflater? = null
     private var dataSourceCopy : ArrayList<String> = ArrayList()
 
     init {
-        inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         dataSourceCopy.addAll(dataSource)
     }
 
     override fun getCount(): Int {
         return dataSource.size
-        //return titles.size
     }
 
     override fun getItem(position: Int): Any {
         return dataSource[position]
-        //return titles[position]
     }
 
     override fun getItemId(position: Int): Long {
@@ -46,15 +43,15 @@ class MainAdapter(private val context: Context, private val dataSource: ArrayLis
         var img: ImageView? = null
         var txt: TextView? = null
 
-        if (convertView == null)
+        if (convertView == null) {
+            inflater = parent.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
             convertView = inflater!!.inflate(R.layout.listview_cities_row, parent, false)
+        }
 
         img = ViewHolder[convertView!!, R.id.main_icon]
-        //img.setImageResource(icons.getResourceId(position, -1))
-        img.setImageDrawable(context.resources.getDrawable(R.drawable.restaurantes,context.theme))
+        img.setImageDrawable(parent.resources.getDrawable(R.drawable.restaurantes,parent.context.theme))
 
         txt = ViewHolder[convertView, R.id.main_txt]
-        //txt.text = titles[position]
         txt.text = dataSource[position]
 
         return convertView

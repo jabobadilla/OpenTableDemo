@@ -89,7 +89,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initMainFragment() {
-        val test = Singleton.getCurrentFragment()
+
         if (Singleton.getCurrentFragment() !== mainFragment) {
             removeFragments()
             val bundle = Bundle()
