@@ -9,42 +9,40 @@ import android.widget.SearchView
 import androidx.annotation.NonNull
 import androidx.annotation.Nullable
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.bobadilla.opentabledemo.R
 import com.bobadilla.opentabledemo.Singleton
+import com.bobadilla.opentabledemo.ViewModels.RestaurantsViewModel
 import com.bobadilla.opentabledemo.adapters.RestaurantsAdapter
-import com.bobadilla.opentabledemo.controller.ConnectionController
 import com.bobadilla.opentabledemo.objects.CommonFunctions
 import com.bobadilla.opentabledemo.objects.Restaurant
-import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import org.json.JSONArray
-import org.json.JSONException
 import org.json.JSONObject
 
 class RestaurantsFragment : Fragment(), View.OnClickListener, SearchView.OnQueryTextListener {
 
     private lateinit var listView : ListView
     private lateinit var searchBar : SearchView
-
     private var lay: Int = 0
     private var selectedCity : String? = null
     private var restaurantsAdapter: RestaurantsAdapter? = null
-
-    private var JSONResponse: JSONObject? = null
-    public var restaurantsList: ArrayList<Restaurant>? = null
-
-    private val parentJob = Job()
-    private val coroutineScope = CoroutineScope(Dispatchers.Main + parentJob)
+    var restaurantsList: ArrayList<Restaurant>? = null
+    private lateinit var model: RestaurantsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val bundle = getArguments()
+        model = ViewModelProvider(activity!!).get(RestaurantsViewModel::class.java)
+        val bundle = arguments
         lay = bundle!!.getInt("lay")
-        selectedCity = bundle!!.getString("selectedItem", "")
-        Singleton.setCurrentFragment(this)
+        if (savedInstanceState != null) {
+            selectedCity = model.selectedCity
+        } else {
+            selectedCity = bundle!!.getString("selectedCity", "")
+            model.selectedCity = selectedCity
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -64,7 +62,6 @@ class RestaurantsFragment : Fragment(), View.OnClickListener, SearchView.OnQuery
 
     override fun onClick(v: View) {
         when (v.id) {
-
         }
     }
 
@@ -79,40 +76,18 @@ class RestaurantsFragment : Fragment(), View.OnClickListener, SearchView.OnQuery
 
         searchBar!!.setOnQueryTextListener(this)
 
-        coroutineScope.launch {
-            JSONResponse = ConnectionController.callOpenTableSync("https://opentable.herokuapp.com/api/restaurants?city=" + selectedCity).await()
-            when (JSONResponse) {
-                is JSONObject -> {
-                    fetchComplete()
+        model.restaurantsInCity?.observe(viewLifecycleOwner, Observer {
+            if (model.previousSelectedCity == selectedCity) {
+                if (restaurantsList == null) {
+                    restaurantsList = it
+                    restaurantsAdapter = RestaurantsAdapter(restaurantsList!!,this)
                 }
-                else -> CommonFunctions.displayJSONReadErrorMessage()
             }
-        }
-    }
-
-    fun fetchComplete() {
-
-        println("fetchComplete")
-
-        try {
-            val restaurantsArray : JSONArray? = JSONResponse?.getJSONArray("restaurants")
-
-            restaurantsList = ArrayList<Restaurant>()
-            for (i in 0 until restaurantsArray!!.length()) {
-                restaurantsList?.add(Gson().fromJson(restaurantsArray!!.getString(i),Restaurant::class.java))
-            }
-
-            restaurantsAdapter = RestaurantsAdapter(restaurantsList!!,this)
             listView.adapter = restaurantsAdapter
             restaurantsAdapter?.notifyDataSetChanged()
-        }
-        catch (e: JSONException){
-            e.printStackTrace()
-            CommonFunctions.displayJSONReadErrorMessage()
-        }
-        finally {
-            Singleton.dissmissLoad()
-        }
+        })
+
+        model.loadRestaurants(selectedCity!!)
 
     }
 

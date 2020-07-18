@@ -1,14 +1,14 @@
 package com.bobadilla.opentabledemo
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.FrameLayout
 import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.widget.Toolbar
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import com.bobadilla.opentabledemo.objects.CommonFunctions
 import com.bobadilla.opentabledemo.views.MainFragment
 import com.google.android.material.navigation.NavigationView
 import kotlinx.android.synthetic.main.activity_main.*
@@ -21,12 +21,20 @@ class MainActivity : AppCompatActivity() {
     private var drawerLayout: DrawerLayout? = null
     private var navigationView: NavigationView? = null
     private var toolbar: Toolbar? = null
+    private var hasSavedInstanceState: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         Singleton.setCurrenActivity(this)
+
+        if (savedInstanceState != null) { hasSavedInstanceState = true } else hasSavedInstanceState = false
+
         initView()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
     }
 
     private fun initView() {
@@ -69,9 +77,9 @@ class MainActivity : AppCompatActivity() {
         navigationView?.setNavigationItemSelectedListener{
             when (it.itemId){
                 R.id.nav_home -> {
-                    if (!supportFragmentManager.fragments[0].javaClass.toString().equals("class com.bobadilla.opentabledemo.views.MainFragment")){
+                    if (!supportFragmentManager.fragments[0].tag.equals("class com.bobadilla.opentabledemo.views.MainFragment")){
                         supportFragmentManager.popBackStackImmediate()
-                        if (supportFragmentManager.fragments[0].javaClass.toString().equals("class com.bobadilla.opentabledemo.views.RestaurantsFragment")) {
+                        if (supportFragmentManager.fragments[0].tag.equals("class com.bobadilla.opentabledemo.views.RestaurantsFragment")) {
                             supportFragmentManager.popBackStackImmediate()
                         }
                     }
@@ -83,32 +91,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         mainFragment = MainFragment()
-        Singleton.setFragmentManager(supportFragmentManager);
-        initMainFragment()
-
+        Singleton.setFragmentManager(supportFragmentManager)
+        initFragment()
     }
 
-    private fun initMainFragment() {
-
+    private fun initFragment() {
         if (Singleton.getCurrentFragment() !== mainFragment) {
-            removeFragments()
-            val bundle = Bundle()
-            bundle.putString("name", "name_demo")
-            bundle.putInt("lay", mainContent!!.getId())
-            if (mainFragment!!.getArguments() == null)
-                mainFragment!!.setArguments(bundle)
-            val ft = supportFragmentManager.beginTransaction()
-
-            ft.replace(mainContent!!.id, mainFragment!!)
-            ft.commit()
-        }
-    }
-
-    private fun removeFragments() {
-        if (Singleton.getCurrentFragment() != null) {
-            Log.d("fragment", Singleton.getCurrentFragment().javaClass.toString())
-            val ft = supportFragmentManager.beginTransaction()
-            ft.remove(Singleton.getCurrentFragment()).commit()
+            if ( !hasSavedInstanceState ) {
+                CommonFunctions.goToNextFragment(mainContent!!.id,"")
+            }
         }
     }
 

@@ -9,38 +9,28 @@ import android.widget.SearchView
 import androidx.annotation.NonNull
 import androidx.annotation.Nullable
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.bobadilla.opentabledemo.R
 import com.bobadilla.opentabledemo.Singleton
+import com.bobadilla.opentabledemo.ViewModels.RestaurantsViewModel
 import com.bobadilla.opentabledemo.adapters.MainAdapter
-import com.bobadilla.opentabledemo.controller.ConnectionController
 import com.bobadilla.opentabledemo.objects.CommonFunctions
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import org.json.JSONArray
-import org.json.JSONException
-import org.json.JSONObject
 
 class MainFragment : Fragment(), View.OnClickListener, SearchView.OnQueryTextListener {
 
     private lateinit var listView : ListView
     private lateinit var searchBar : SearchView
-
     private var lay: Int = 0
     private var mainAdapter: MainAdapter? = null
-
-    private var JSONResponse: JSONObject? = null
-    public var citiesList: ArrayList<String>? = null
-
-    private val parentJob = Job()
-    private val coroutineScope = CoroutineScope(Dispatchers.Main + parentJob)
+    var citiesList: ArrayList<String>? = null
+    private lateinit var model: RestaurantsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val bundle = getArguments()
+        val bundle = arguments
         lay = bundle!!.getInt("lay")
-        Singleton.setCurrentFragment(this)
+        model = ViewModelProvider(activity!!).get(RestaurantsViewModel::class.java)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -69,43 +59,14 @@ class MainFragment : Fragment(), View.OnClickListener, SearchView.OnQueryTextLis
 
         searchBar!!.setOnQueryTextListener(this)
 
-        coroutineScope.launch {
-            JSONResponse = ConnectionController.callOpenTableSync("https://opentable.herokuapp.com/api/cities").await()
-            when (JSONResponse) {
-                is JSONObject -> {
-                    fetchComplete()
-                }
-                else -> CommonFunctions.displayJSONReadErrorMessage()
+        model.cities.observe(viewLifecycleOwner, Observer {
+            if (mainAdapter == null) {
+                citiesList = it
+                mainAdapter = MainAdapter(citiesList!!,this)
             }
-        }
-
-    }
-
-    fun fetchComplete() {
-
-        println("fetchComplete")
-
-        try {
-            val citiesArray : JSONArray? = JSONResponse?.getJSONArray("cities")
-
-            citiesList = ArrayList()
-
-            for (i in 0 until citiesArray!!.length()) {
-                citiesList?.add(citiesArray!!.getString(i))
-            }
-
-            mainAdapter = MainAdapter(citiesList!!,this)
             listView.adapter = mainAdapter
             mainAdapter?.notifyDataSetChanged()
-        }
-        catch (e: JSONException){
-            e.printStackTrace()
-            CommonFunctions.displayJSONReadErrorMessage()
-        }
-        finally {
-            Singleton.dissmissLoad()
-        }
-
+        })
     }
 
     override fun onQueryTextSubmit(query: String): Boolean {

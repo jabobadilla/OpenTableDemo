@@ -16,30 +16,21 @@ import androidx.annotation.NonNull
 import androidx.annotation.Nullable
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.bobadilla.opentabledemo.R
 import com.bobadilla.opentabledemo.Singleton
-import com.bobadilla.opentabledemo.controller.ConnectionController
-import com.bobadilla.opentabledemo.objects.CommonFunctions
+import com.bobadilla.opentabledemo.ViewModels.RestaurantsViewModel
 import com.bobadilla.opentabledemo.objects.Restaurant
-import com.google.gson.Gson
 import com.squareup.picasso.Picasso
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import org.json.JSONException
-import org.json.JSONObject
 
 
 class RestaurantDetailFragment : Fragment(), View.OnClickListener {
     private var lay = 0
     private var selectedRestaurant : String? = null
-
-    private var JSONResponse: JSONObject? = null
     private var restaurant: Restaurant? = null
     private val CALL_REQUEST = 100
     private var parsedString: String? = null
-
     private var img_row: ImageView? = null
     private var name_row: TextView? = null
     private  var address_row:TextView? = null
@@ -51,17 +42,20 @@ class RestaurantDetailFragment : Fragment(), View.OnClickListener {
     private  var phone_row:TextView? = null
     private  var price_row:TextView? = null
     private  var reserve_row:TextView? = null
-
-    private val parentJob = Job()
-    private val coroutineScope = CoroutineScope(Dispatchers.Main + parentJob)
+    private lateinit var model: RestaurantsViewModel
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val bundle = getArguments()
+        model = ViewModelProvider(activity!!).get(RestaurantsViewModel::class.java)
+        val bundle = arguments
         lay = bundle!!.getInt("lay")
-        selectedRestaurant = bundle!!.getString("selectedItem", "")
-        Singleton.setCurrentFragment(this)
+        if (savedInstanceState != null) {
+            selectedRestaurant = model.selectedRestaurant
+        } else {
+            selectedRestaurant = bundle!!.getString("selectedRestaurant", "")
+            model.selectedRestaurant = selectedRestaurant
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -70,6 +64,7 @@ class RestaurantDetailFragment : Fragment(), View.OnClickListener {
 
     override fun onResume() {
         super.onResume()
+        Singleton.setCurrentFragment(this)
     }
 
     override fun onPause() {
@@ -106,63 +101,45 @@ class RestaurantDetailFragment : Fragment(), View.OnClickListener {
             callPhoneNumber(parsedString!!)
         }
 
-        coroutineScope.launch {
-            JSONResponse = ConnectionController.callOpenTableSync("https://opentable.herokuapp.com/api/restaurants/$selectedRestaurant").await()
-            when (JSONResponse) {
-                is JSONObject -> {
-                    fetchComplete()
+        model.restaurantDetail?.observe(viewLifecycleOwner, Observer {
+            if (model.previousSelectedRestaurant == selectedRestaurant) {
+                restaurant = it
+
+                if (restaurant?.image_url != null)
+                    Picasso.get().load(restaurant?.image_url).into(img_row)
+                else
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        img_row?.setImageDrawable(activity?.resources?.getDrawable(R.drawable.rest_header,activity?.theme))
+                    }
+
+                name_row?.text = restaurant?.name
+                address_row?.text = "Address: " + restaurant?.address
+                city_row?.text = "City: " + restaurant?.city
+                state_row?.text = "State: " + restaurant?.state
+                area_row?.text = "Area: " + restaurant?.area
+                postalCode_row?.text = "Zip Code: " + restaurant?.postalCode
+                country_row?.text = "Country: " + restaurant?.country
+                if (restaurant?.phone != null || restaurant?.phone != "")
+                    phone_row?.text = "Phone: " + restaurant?.phone + "   (PRESS HERE TO DIAL)"
+                else
+                    phone_row?.visibility = View.GONE
+                when (restaurant?.price) {
+                    1 -> price_row?.text = "$"
+                    2 -> price_row?.text = "$$"
+                    3 -> price_row?.text = "$$$"
+                    else -> price_row?.text = "$$$$"
                 }
-                else -> CommonFunctions.displayJSONReadErrorMessage()
+                if (restaurant?.reserve_url != null)
+                    reserve_row?.text = "RESERVE HERE (PRESS)"
+                else
+                    reserve_row?.visibility = View.GONE
             }
-        }
+        })
+
+        model.loadRestaurantDetail(selectedRestaurant!!)
     }
 
     override fun onClick(v: View) {}
-
-    fun fetchComplete() {
-
-        println("fetchComplete")
-
-        try {
-            restaurant = Gson().fromJson(JSONResponse.toString(),Restaurant::class.java)
-
-            if (restaurant?.image_url != null)
-                Picasso.get().load(restaurant?.image_url).into(img_row)
-            else
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    img_row?.setImageDrawable(activity?.resources?.getDrawable(R.drawable.rest_header,activity?.theme))
-                }
-
-            name_row?.text = restaurant?.name
-            address_row?.text = "Address: " + restaurant?.address
-            city_row?.text = "City: " + restaurant?.city
-            state_row?.text = "State: " + restaurant?.state
-            area_row?.text = "Area: " + restaurant?.area
-            postalCode_row?.text = "Zip Code: " + restaurant?.postalCode
-            country_row?.text = "Country: " + restaurant?.country
-            if (restaurant?.phone != null || restaurant?.phone != "")
-                phone_row?.text = "Phone: " + restaurant?.phone + "   (PRESS HERE TO DIAL)"
-            else
-                phone_row?.visibility = View.GONE
-            when (restaurant?.price) {
-                1 -> price_row?.text = "$"
-                2 -> price_row?.text = "$$"
-                3 -> price_row?.text = "$$$"
-                else -> price_row?.text = "$$$$"
-            }
-            if (restaurant?.reserve_url != null)
-                reserve_row?.text = "RESERVE HERE (PRESS)"
-            else
-                reserve_row?.visibility = View.GONE
-        }
-        catch (e: JSONException){
-            e.printStackTrace()
-            CommonFunctions.displayJSONReadErrorMessage()
-        }
-        finally {
-            Singleton.dissmissLoad()
-        }
-    }
 
     private fun callPhoneNumber(tel: String) {
         try {

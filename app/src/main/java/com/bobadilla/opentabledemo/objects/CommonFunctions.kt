@@ -2,6 +2,7 @@ package com.bobadilla.opentabledemo.objects
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentTransaction
 import com.bobadilla.opentabledemo.R
 import com.bobadilla.opentabledemo.Singleton
 import com.bobadilla.opentabledemo.Singleton.getFragmentManager
@@ -41,20 +42,26 @@ object CommonFunctions {
 
     fun goToNextFragment(lay: Int, selectedItem: String) {
 
-        val currentFragment = Singleton.getCurrentFragment()
         val fragment: Fragment =
-            when (currentFragment) {
+            when (Singleton.getCurrentFragment()) {
                 is MainFragment -> RestaurantsFragment()
                 is RestaurantsFragment -> RestaurantDetailFragment()
-                else -> RestaurantDetailFragment()
+                else -> MainFragment()
+        }
+        val selected: String =
+            when (Singleton.getCurrentFragment()) {
+                is MainFragment -> "selectedCity"
+                is RestaurantsFragment -> "selectedRestaurant"
+                else -> "selectedItem"
         }
         val bundle = Bundle()
         bundle.putInt("lay", lay)
-        bundle.putString("selectedItem",selectedItem)
+        bundle.putString(selected,selectedItem)
         fragment.setArguments(bundle)
         getFragmentManager()?.beginTransaction()
-            ?.replace(lay, fragment)
-            ?.addToBackStack(null)
+            ?.replace(lay, fragment, fragment.javaClass.toString())
+            ?.addToBackStack( fragment.javaClass.toString() )
+            ?.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE)
             ?.commit()
     }
 
