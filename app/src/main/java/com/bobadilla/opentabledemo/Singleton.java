@@ -15,6 +15,8 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.bobadilla.opentabledemo.ViewModels.RestaurantsViewModel;
 import com.bobadilla.opentabledemo.dialogs.CustomDialog;
 import com.bobadilla.opentabledemo.dialogs.LoadDialog;
 
@@ -40,6 +42,7 @@ public class Singleton extends Application {
     private static TextView appText;
     private static ImageView toolLogo, menuBtn;
     private static FragmentManager fragmentManager;
+    private static RestaurantsViewModel restaurantsViewModel;
 
     //----------------------
     private static final int CORE_POOL_SIZE = 5;
@@ -160,6 +163,14 @@ public class Singleton extends Application {
 
     public static AppCompatActivity getCurrentActivity(){
         return currentActivity;
+    }
+
+    public static void setRestaurantsViewModel(RestaurantsViewModel restaurantViewModel) {
+        restaurantsViewModel = restaurantViewModel;
+    }
+
+    public static RestaurantsViewModel getRestaurantsViewModel() {
+        return restaurantsViewModel;
     }
 
     public static void hideKeyboard(View view) {

@@ -98,7 +98,7 @@ class MainActivity : AppCompatActivity() {
     private fun initFragment() {
         if (Singleton.getCurrentFragment() !== mainFragment) {
             if ( !hasSavedInstanceState ) {
-                CommonFunctions.goToNextFragment(mainContent!!.id,"")
+                CommonFunctions.goToNextFragment(mainContent!!.id,"selectedItem")
             }
         }
     }

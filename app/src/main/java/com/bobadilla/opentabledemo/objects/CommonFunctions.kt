@@ -41,28 +41,44 @@ object CommonFunctions {
     }
 
     fun goToNextFragment(lay: Int, selectedItem: String) {
-
+        val selected: String =
+            when (Singleton.getCurrentFragment()) {
+                is MainFragment -> {
+                    if (selectedItem.equals("selectedItem")) selectedItem else "selectedCity"
+                }
+                is RestaurantsFragment -> "selectedRestaurant"
+                else -> "selectedItem"
+            }
         val fragment: Fragment =
             when (Singleton.getCurrentFragment()) {
-                is MainFragment -> RestaurantsFragment()
+                is MainFragment -> {
+                    val test = getFragmentManager().backStackEntryCount
+                    if (getFragmentManager().backStackEntryCount <= 0 && selected.equals("selectedItem"))
+                        MainFragment()
+                    else
+                        RestaurantsFragment()
+                }
                 is RestaurantsFragment -> RestaurantDetailFragment()
                 else -> MainFragment()
         }
-        val selected: String =
-            when (Singleton.getCurrentFragment()) {
-                is MainFragment -> "selectedCity"
-                is RestaurantsFragment -> "selectedRestaurant"
-                else -> "selectedItem"
-        }
+
         val bundle = Bundle()
         bundle.putInt("lay", lay)
         bundle.putString(selected,selectedItem)
         fragment.setArguments(bundle)
-        getFragmentManager()?.beginTransaction()
-            ?.replace(lay, fragment, fragment.javaClass.toString())
-            ?.addToBackStack( fragment.javaClass.toString() )
-            ?.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE)
-            ?.commit()
+        val fm = getFragmentManager()?.beginTransaction()
+        when (fragment) {
+            is MainFragment -> {
+                fm?.replace(lay, fragment, fragment.javaClass.toString())?.commit()
+            }
+            else -> {
+                    fm?.replace(lay, fragment, fragment.javaClass.toString())
+                    ?.addToBackStack( fragment.javaClass.toString() )
+                    ?.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE)
+                    ?.commit()
+            }
+        }
+
     }
 
 }

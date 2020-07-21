@@ -34,7 +34,7 @@ class RestaurantsFragment : Fragment(), View.OnClickListener, SearchView.OnQuery
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        model = ViewModelProvider(activity!!).get(RestaurantsViewModel::class.java)
+        model = Singleton.getRestaurantsViewModel()
         val bundle = arguments
         lay = bundle!!.getInt("lay")
         if (savedInstanceState != null) {
