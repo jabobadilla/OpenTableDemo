@@ -1,4 +1,4 @@
-package com.bobadilla.opentabledemo;
+package com.bobadilla.opentabledemo.common;
 
 import android.app.Application;
 import android.content.Context;
@@ -16,9 +16,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bobadilla.opentabledemo.ViewModels.RestaurantsViewModel;
-import com.bobadilla.opentabledemo.dialogs.CustomDialog;
-import com.bobadilla.opentabledemo.dialogs.LoadDialog;
+import com.bobadilla.opentabledemo.ui.viewModels.RestaurantsViewModel;
+import com.bobadilla.opentabledemo.ui.dialogs.CustomDialog;
+import com.bobadilla.opentabledemo.ui.dialogs.LoadDialog;
 
 import java.io.File;
 import java.util.concurrent.*;

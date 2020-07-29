@@ -15,14 +15,14 @@
                         android:orientation="vertical" >
 
                         <ImageView
-                                android:id="@+id/img_row"
+                                android:id="@+id/headerImageRow"
                                 android:layout_width="match_parent"
                                 android:layout_height="220dp"
                                 android:scaleType="fitXY"
                                 android:src="@drawable/ic_launcher_background" />
 
                         <TextView
-                                android:id="@+id/name_row"
+                                android:id="@+id/nameRow"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginLeft="15dp"
@@ -34,7 +34,7 @@
                                 android:textStyle="bold" />
 
                         <TextView
-                                android:id="@+id/address_row"
+                                android:id="@+id/addressRow"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginLeft="15dp"
@@ -43,7 +43,7 @@
                                 android:textColor="@color/colorPrimary" />
 
                         <TextView
-                                android:id="@+id/city_row"
+                                android:id="@+id/cityRow"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginLeft="15dp"
@@ -52,7 +52,7 @@
                                 android:textColor="@color/colorPrimary" />
 
                         <TextView
-                                android:id="@+id/state_row"
+                                android:id="@+id/stateRow"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginLeft="15dp"
@@ -61,7 +61,7 @@
                                 android:textColor="@color/colorPrimary" />
 
                         <TextView
-                                android:id="@+id/area_row"
+                                android:id="@+id/areaRow"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginLeft="15dp"
@@ -70,7 +70,7 @@
                                 android:textColor="@color/colorPrimary" />
 
                         <TextView
-                                android:id="@+id/postalCode_row"
+                                android:id="@+id/postalCodeRow"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginLeft="15dp"
@@ -79,7 +79,7 @@
                                 android:textColor="@color/colorPrimary" />
 
                         <TextView
-                                android:id="@+id/country_row"
+                                android:id="@+id/countryRow"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginLeft="15dp"
@@ -88,7 +88,7 @@
                                 android:textColor="@color/colorPrimary" />
 
                         <TextView
-                                android:id="@+id/phone_row"
+                                android:id="@+id/phoneRow"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginLeft="15dp"
@@ -97,7 +97,7 @@
                                 android:textColor="@color/colorPrimary" />
 
                         <TextView
-                                android:id="@+id/price_row"
+                                android:id="@+id/priceRow"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginLeft="15dp"
@@ -106,7 +106,7 @@
                                 android:textColor="@color/colorPrimary" />
 
                         <TextView
-                                android:id="@+id/reserve_row"
+                                android:id="@+id/reserveRow"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginLeft="15dp"

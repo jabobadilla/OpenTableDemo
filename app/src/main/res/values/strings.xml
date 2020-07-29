@@ -16,4 +16,9 @@
     <string name="drawer_open">Drawer Open</string>
     <string name="drawer_close">Drawer Close</string>
 
+    <string name="selected_city">SelectedCity</string>
+    <string name="selected_restaurant">selectedRestaurant</string>
+
+    <string name="db_name">Restaurant.db</string>
+
 </resources>

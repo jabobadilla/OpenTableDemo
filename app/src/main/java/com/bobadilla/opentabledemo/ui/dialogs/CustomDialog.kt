@@ -1,4 +1,4 @@
-package com.bobadilla.opentabledemo.dialogs
+package com.bobadilla.opentabledemo.ui.dialogs
 
 import android.app.Dialog
 import android.content.Context
@@ -6,7 +6,6 @@ import android.os.Build
 import android.os.Bundle
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentTransaction
 import androidx.appcompat.app.AlertDialog
 import android.text.Html
 import android.util.Log
@@ -15,7 +14,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import com.bobadilla.opentabledemo.R
-import com.bobadilla.opentabledemo.Singleton
+import com.bobadilla.opentabledemo.common.Singleton
 
 class CustomDialog : DialogFragment(), View.OnClickListener {
 

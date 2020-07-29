@@ -1,11 +1,11 @@
-package com.bobadilla.opentabledemo.controller
+package com.bobadilla.opentabledemo.connection.controller
 
 import android.os.Handler
 import android.os.Looper
-import com.bobadilla.opentabledemo.Singleton
-import com.bobadilla.opentabledemo.Singleton.getFragmentManager
+import com.bobadilla.opentabledemo.common.Singleton
+import com.bobadilla.opentabledemo.common.Singleton.getFragmentManager
 import com.bobadilla.opentabledemo.connection.OkHttpRequest
-import com.bobadilla.opentabledemo.objects.CommonFunctions
+import com.bobadilla.opentabledemo.common.CommonFunctions
 import kotlinx.coroutines.*
 import okhttp3.*
 import org.json.JSONException
@@ -52,10 +52,12 @@ object ConnectionController {
             return JSONResponse ?: JSONObject()
         }
 
-    suspend fun callOpenTableSync(url: String): Deferred<JSONObject> =
+    suspend fun callOpenTableSync(fragmentLoad: Boolean, url: String): Deferred<JSONObject> =
         coroutineScope.async(start = CoroutineStart.LAZY) {
 
-            Singleton.showLoadDialog(getFragmentManager())
+            if (fragmentLoad) {
+                Singleton.showLoadDialog(getFragmentManager())
+            }
 
             var client = OkHttpClient()
 

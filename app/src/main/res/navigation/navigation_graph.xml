@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/navigation_graph"
+        app:startDestination="@id/mainFragment">
+
+    <fragment
+            android:id="@+id/mainFragment"
+            android:name="com.bobadilla.opentabledemo.ui.views.MainFragment">
+        <action
+                android:id="@+id/action_mainFragment_to_restaurantsFragment"
+                app:destination="@id/restaurantsFragment" />
+    </fragment>
+    <fragment
+            android:id="@+id/restaurantsFragment"
+            android:name="com.bobadilla.opentabledemo.ui.views.RestaurantsFragment">
+        <action
+                android:id="@+id/action_restaurantsFragment_to_restaurantDetailFragment2"
+                app:destination="@id/restaurantDetailFragment2" />
+    </fragment>
+    <fragment
+            android:id="@+id/restaurantDetailFragment2"
+            android:name="com.bobadilla.opentabledemo.ui.views.RestaurantDetailFragment"
+            android:label="Restaurant Detail" />
+</navigation>
