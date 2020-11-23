@@ -1,11 +1,19 @@
 package com.bobadilla.opentabledemo.ui.viewModels
 
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
+import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.lifecycle.*
+import com.bobadilla.opentabledemo.MainActivity
+import com.bobadilla.opentabledemo.connection.ConnectionStatus
+import com.bobadilla.opentabledemo.connection.api.APIRetriever
 import com.bobadilla.opentabledemo.data.RestaurantRepository
+import com.bobadilla.opentabledemo.data.database.DatabaseExists
 import com.bobadilla.opentabledemo.data.models.City
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /*
 ViewModels offer a number of benefits:
@@ -18,9 +26,16 @@ available after your Activity or Fragment is re-created. This means you can re-u
 View. Freeing up your Activity or Fragment from managing data allows you to write more concise and unit-testable code.
  */
 
-class CitiesViewModel(application: Application) : AndroidViewModel(application) {
+@RequiresApi(Build.VERSION_CODES.M)
+class CitiesViewModel(val applications: Application, val context: Context) : AndroidViewModel(applications) {
 
-    private val restaurantRepository = RestaurantRepository(application)
+    class Factory(val application: Application, val context: Context) : ViewModelProvider.NewInstanceFactory() {
+        override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+            return CitiesViewModel(application, context) as T
+        }
+    }
+
+    private val restaurantRepository = RestaurantRepository(applications)
     private val citiesList = MediatorLiveData<List<City>>()
 
     init {
@@ -28,7 +43,7 @@ class CitiesViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun getAllCities() {
-        citiesList.addSource(restaurantRepository.getAllCities()) { cities ->
+        citiesList.addSource(restaurantRepository.getAllCities(applications, context)) { cities ->
             citiesList.postValue(cities)
         }
     }

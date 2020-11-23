@@ -1,7 +1,6 @@
 package com.bobadilla.opentabledemo.data.dataLoad
 
 import com.bobadilla.opentabledemo.common.CommonFunctions
-import com.bobadilla.opentabledemo.common.Singleton
 import com.bobadilla.opentabledemo.connection.controller.ConnectionController
 import com.bobadilla.opentabledemo.data.models.City
 import com.bobadilla.opentabledemo.data.models.Restaurant
@@ -34,7 +33,7 @@ object DataNetLoad {
                         e.printStackTrace()
                         CommonFunctions.displayJSONReadErrorMessage()
                     } finally {
-                        Singleton.dissmissLoad()
+                        CommonFunctions.dismissLoadDialog()
                     }
                 }
                 else -> CommonFunctions.displayJSONReadErrorMessage()
@@ -57,7 +56,7 @@ object DataNetLoad {
                         e.printStackTrace()
                         CommonFunctions.displayJSONReadErrorMessage()
                     } finally {
-                        Singleton.dissmissLoad()
+                        CommonFunctions.dismissLoadDialog()
                     }
                 }
                 else -> CommonFunctions.displayJSONReadErrorMessage()

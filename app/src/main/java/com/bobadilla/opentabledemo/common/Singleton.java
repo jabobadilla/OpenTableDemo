@@ -209,7 +209,7 @@ public class Singleton extends Application {
         });
     }
 
-    public static LoadDialog showLoadDialog(FragmentManager manager){
+    public static LoadDialog showLoadDialog(FragmentManager manager) {
         if(load == null){
             synchronized (Singleton.class){
                 if(load == null){

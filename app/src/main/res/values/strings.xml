@@ -7,7 +7,11 @@
 
     <string name="connection_problem_title">Attention</string>
     <string name="connection_problem_message">There was a problem connecting, please try again later</string>
-    <string name="connection_problem_action">Connection</string>
+    <string name="connection_problem_action">OK</string>
+
+    <string name="internet_connection_problem_title">Attention</string>
+    <string name="internet_connection_problem_message">You don\'t have an active internet connection, please try again later</string>
+    <string name="internet_connection_problem_action">OK</string>
 
     <string name="json_read_problem_title">Attention</string>
     <string name="json_read_problem_message">There was a problem reading the data, please try again later</string>

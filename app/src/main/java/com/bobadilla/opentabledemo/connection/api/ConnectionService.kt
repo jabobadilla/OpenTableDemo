@@ -1,15 +1,16 @@
 package com.bobadilla.opentabledemo.connection.api
 
-import com.bobadilla.opentabledemo.data.models.CitiesArray
-import com.bobadilla.opentabledemo.data.models.Restaurant
+import com.bobadilla.opentabledemo.data.models.CitiesJSONResults
+import com.bobadilla.opentabledemo.data.models.RestaurantJSONResults
 import retrofit2.http.GET
+import retrofit2.http.Query
 
 interface ConnectionService {
 
-    @GET("cities")
-    suspend fun loadCities() : CitiesArray
+    @GET("citie")
+    suspend fun loadCities() : CitiesJSONResults
 
-    @GET("restaurants?city=")
-    suspend fun loadRestaurants(fragmentLoad: Boolean, selectedCity: String) : Restaurant
+    @GET("restaurants")
+    suspend fun loadRestaurantsByCity(@Query("city") selectedCity: String) : RestaurantJSONResults
 
 }

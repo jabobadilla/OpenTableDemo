@@ -12,9 +12,9 @@ class RestaurantDetailViewModel(application: Application) : AndroidViewModel(app
 
     fun getRestaurantDetail(id: String) : LiveData<Restaurant> {
         restaurantId.value = id
-        val restaurantDetail = Transformations.switchMap<String, Restaurant>(restaurantId) {id ->
+        val test = restaurantId.hasActiveObservers()
+        return Transformations.switchMap(restaurantId) {id ->
             restaurantRepository.findRestaurantByID(id)
         }
-        return restaurantDetail
     }
 }

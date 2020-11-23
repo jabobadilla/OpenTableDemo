@@ -6,6 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.bobadilla.opentabledemo.R
+import com.bobadilla.opentabledemo.connection.api.APIRetriever
 import com.bobadilla.opentabledemo.data.dataLoad.DataNetLoad
 import com.bobadilla.opentabledemo.data.models.City
 import com.bobadilla.opentabledemo.data.models.Restaurant
@@ -38,10 +39,11 @@ abstract class RestaurantDatabase : RoomDatabase() {
                         .addCallback(object : RoomDatabase.Callback() {
                             override fun onCreate(db: SupportSQLiteDatabase) {
                                 super.onCreate(db)
-                                INSTANCE?.let {
+                                INSTANCE?.let { database ->
                                         CoroutineScope(Dispatchers.IO).launch {
-                                        val data = DataNetLoad.loadCities(true).await()
-                                        prePopulateCities(it,data)
+                                        //val data = DataNetLoad.loadCities(true).await()
+                                        val data = APIRetriever().getAPICities(true)
+                                        prePopulateCities(database,data)
                                     }
                                 }
                             }

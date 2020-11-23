@@ -7,7 +7,8 @@ import com.google.gson.JsonObject
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 
-data class CitiesArray (
+data class CitiesJSONResults (
+    @SerializedName("count") val count : Int = 0,
     @SerializedName("cities") val cities : ArrayList<String>
 )
 
@@ -15,5 +16,5 @@ data class CitiesArray (
 data class City (
     @Expose(serialize = false, deserialize = false)
     @PrimaryKey(autoGenerate = true) var id : Int = 0,
-    var city: String = ""
+    @SerializedName("city") var city: String = ""
 )

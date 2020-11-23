@@ -21,12 +21,12 @@ interface RestaurantDao {
     @Query("SELECT * FROM City ORDER BY city ASC")
     fun getAllCitites() : LiveData<List<City>>
 
-    // 2: Select by city
+    // 2: Select by city name
     @Query("SELECT * FROM City WHERE city LIKE '%' || :cityName || '%'")
     fun findBy(cityName: String) : LiveData<List<City>>
 
     // 3: Select restaurants by city
-    @Query("SELECT * FROM Restaurant WHERE city = :city")
+    @Query("SELECT * FROM Restaurant WHERE city = :city ORDER BY name ASC")
     fun findByCity(city: String) : LiveData<List<Restaurant>>
 
     // 4: Select by restaurant name in city
@@ -50,6 +50,9 @@ interface RestaurantDao {
 
     @Query("DELETE FROM Restaurant")
     fun deleteAllRestaurants()
+
+    @Query("DELETE FROM Restaurant where city = :city")
+    fun deleteAllRestaurantsInCity(city: String)
 
     @Query("SELECT COUNT(*) FROM Restaurant WHERE city = :city")
     fun countRestaurantsInCity(city: String) : Int

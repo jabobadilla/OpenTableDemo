@@ -1,5 +1,6 @@
 package com.bobadilla.opentabledemo.ui.views
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,8 +8,10 @@ import android.view.ViewGroup
 import android.widget.SearchView
 import androidx.annotation.NonNull
 import androidx.annotation.Nullable
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import com.bobadilla.opentabledemo.R
 import com.bobadilla.opentabledemo.data.models.Restaurant
@@ -27,8 +30,9 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.OnItemClickListener, 
         super.onCreate(savedInstanceState)
         selectedCity = arguments?.getString(getString(R.string.selected_city))
 
-        //restaurantsViewModel = ViewModelProvider(requireActivity(),RestaurantsViewModelFactory(requireActivity().application,selectedCity!!)).get(RestaurantsViewModel::class.java)
-        restaurantsViewModel = RestaurantsViewModel(requireActivity().application, selectedCity!!)
+        restaurantsViewModel =
+            ViewModelProvider(requireActivity(),RestaurantsViewModel.Factory(requireActivity().application,requireActivity(),selectedCity!!))
+            .get(RestaurantsViewModel::class.java)
     }
 
     override fun onCreateView(@NonNull inflater: LayoutInflater, @Nullable container: ViewGroup?, @Nullable savedInstanceState: Bundle?): View {
@@ -41,10 +45,11 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.OnItemClickListener, 
         return rootView
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        restaurantsViewModel.getRestaurantsByCity().observe(viewLifecycleOwner, Observer { restaurants ->
+        restaurantsViewModel.getRestaurantResults(selectedCity!!).observe(viewLifecycleOwner, Observer { restaurants ->
             rvCities.adapter = RestaurantsAdapter(restaurants, this )
         })
 
@@ -52,12 +57,14 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.OnItemClickListener, 
         requireActivity().toolbar.title =  "Restaurants in $selectedCity"
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onQueryTextSubmit(query: String): Boolean {
         restaurantsViewModel.searchRestaurantsByName(query, selectedCity!!)
         hideKeyboardFromSearchBar()
         return true
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onQueryTextChange(newText: String): Boolean {
         restaurantsViewModel.searchRestaurantsByName(newText, selectedCity!!)
         return true

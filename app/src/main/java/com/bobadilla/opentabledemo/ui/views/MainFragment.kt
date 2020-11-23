@@ -1,5 +1,6 @@
 package com.bobadilla.opentabledemo.ui.views
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.SearchView
 import androidx.annotation.NonNull
 import androidx.annotation.Nullable
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -26,7 +28,10 @@ class MainFragment : Fragment(), CitiesAdapter.OnItemClickListener, SearchView.O
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        citiesViewModel = ViewModelProvider(requireActivity()).get(CitiesViewModel::class.java)
+        //citiesViewModel = ViewModelProvider(requireActivity()).get(CitiesViewModel::class.java)
+        citiesViewModel =
+            ViewModelProvider(requireActivity(), CitiesViewModel.Factory(requireActivity().application, requireActivity()))
+                .get(CitiesViewModel::class.java)
     }
 
     override fun onCreateView(@NonNull inflater: LayoutInflater, @Nullable container: ViewGroup?, @Nullable savedInstanceState: Bundle?): View {
@@ -39,6 +44,7 @@ class MainFragment : Fragment(), CitiesAdapter.OnItemClickListener, SearchView.O
         return rootView
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -50,12 +56,14 @@ class MainFragment : Fragment(), CitiesAdapter.OnItemClickListener, SearchView.O
         requireActivity().toolbar.title = getString(R.string.app_name)
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onQueryTextSubmit(query: String): Boolean {
         citiesViewModel.searchCities(query)
         hideKeyboardFromSearchBar()
         return true
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onQueryTextChange(newText: String): Boolean {
         citiesViewModel.searchCities(newText)
         return true

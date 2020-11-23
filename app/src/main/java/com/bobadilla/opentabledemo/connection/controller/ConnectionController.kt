@@ -2,10 +2,8 @@ package com.bobadilla.opentabledemo.connection.controller
 
 import android.os.Handler
 import android.os.Looper
-import com.bobadilla.opentabledemo.common.Singleton
-import com.bobadilla.opentabledemo.common.Singleton.getFragmentManager
-import com.bobadilla.opentabledemo.connection.OkHttpRequest
 import com.bobadilla.opentabledemo.common.CommonFunctions
+import com.bobadilla.opentabledemo.connection.OkHttpRequest
 import kotlinx.coroutines.*
 import okhttp3.*
 import org.json.JSONException
@@ -19,45 +17,43 @@ object ConnectionController {
 
     fun callOpenTableAsync(url: String): JSONObject {
 
-            Singleton.showLoadDialog(getFragmentManager())
+        CommonFunctions.showLoadDialog()
 
-            var mHandler = Handler(Looper.getMainLooper());
+        var mHandler = Handler(Looper.getMainLooper());
 
-            var client = OkHttpClient()
-            var request = OkHttpRequest(client)
+        var client = OkHttpClient()
+        var request = OkHttpRequest(client)
 
-            request.GET(url, object : Callback {
+        request.GET(url, object : Callback {
 
-                override fun onFailure(call: Call, e: IOException) {
-                    println("Request Failure.")
-                }
+            override fun onFailure(call: Call, e: IOException) {
+                println("Request Failure.")
+            }
 
-                override fun onResponse(call: Call, response: Response) {
-                    val responseData = response.body?.string()
-                    mHandler.post {
-                        try {
-                            JSONResponse = JSONObject(responseData)
-                            println(JSONResponse)
-                            println("Request Successful!!")
-                        } catch (e: JSONException) {
-                            Singleton.dissmissLoad()
-                            e.printStackTrace()
-                            CommonFunctions.displayConnectionProblemMessage()
-                        }
+            override fun onResponse(call: Call, response: Response) {
+                val responseData = response.body?.string()
+                mHandler.post {
+                    try {
+                        JSONResponse = JSONObject(responseData)
+                        println(JSONResponse)
+                        println("Request Successful!!")
+                    } catch (e: JSONException) {
+                        CommonFunctions.dismissLoadDialog()
+                        e.printStackTrace()
+                        CommonFunctions.displayConnectionProblemMessage()
                     }
                 }
+            }
 
-            })
+        })
 
-            return JSONResponse ?: JSONObject()
-        }
+        return JSONResponse ?: JSONObject()
+    }
 
     suspend fun callOpenTableSync(fragmentLoad: Boolean, url: String): Deferred<JSONObject> =
         coroutineScope.async(start = CoroutineStart.LAZY) {
 
-            if (fragmentLoad) {
-                Singleton.showLoadDialog(getFragmentManager())
-            }
+            if (fragmentLoad) CommonFunctions.showLoadDialog()
 
             var client = OkHttpClient()
 
@@ -71,7 +67,7 @@ object ConnectionController {
                 println(JSONResponse)
                 println("Request Successful!!")
             } catch (e: JSONException) {
-                Singleton.dissmissLoad()
+                CommonFunctions.dismissLoadDialog()
                 e.printStackTrace()
                 CommonFunctions.displayConnectionProblemMessage()
             }
