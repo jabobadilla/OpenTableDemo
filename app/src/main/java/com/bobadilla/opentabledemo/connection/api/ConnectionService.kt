@@ -7,7 +7,7 @@ import retrofit2.http.Query
 
 interface ConnectionService {
 
-    @GET("citie")
+    @GET("cities")
     suspend fun loadCities() : CitiesJSONResults
 
     @GET("restaurants")

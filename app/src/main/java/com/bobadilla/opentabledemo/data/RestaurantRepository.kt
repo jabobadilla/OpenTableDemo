@@ -233,7 +233,7 @@ class RestaurantRepository(application: Application) : APICallsHandler(), APIErr
     }
 
     override fun onError(errorType: ErrorType) {
-        TODO("Not yet implemented")
+        print(errorType.toString())
     }
 
 }
